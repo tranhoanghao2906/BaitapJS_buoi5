@@ -1,69 +1,82 @@
-// Hàm tính thuế thu nhập cá nhân theo bảng thuế lũy tiến (có return)
-const tinhThueThuNhap = (thuNhapChiuThue) => {
-    let thue = 0;
+// Hàm tính thuế thu nhập cá nhân
+const tinhThueThuNhap = (thuNhapNam, soNguoiPhuThuoc) => {
+    // Tính thu nhập chịu thuế
+    const giamTruCoDinh = 4e6; // Giảm trừ cố định 4 triệu
+    const giamTruPhuThuoc = soNguoiPhuThuoc * 1.6e6; // Giảm trừ mỗi người phụ thuộc 1.6 triệu
+    const thuNhapChiuThue = thuNhapNam - giamTruCoDinh - giamTruPhuThuoc;
 
-    if (thuNhapChiuThue <= 0) {
-        return 0; // Nếu thu nhập chịu thuế <= 0, không phải nộp thuế
-    } else if (thuNhapChiuThue <= 60_000_000) {
-        // Đến 60 triệu: 5%
+    // Nếu thu nhập chịu thuế <= 0, không phải nộp thuế
+    if (thuNhapChiuThue <= 0) return 0;
+
+    // Tính thuế: áp dụng thuế suất của mức thu nhập chịu thuế cho toàn bộ thu nhập chịu thuế
+    let thue = 0;
+    if (thuNhapChiuThue <= 60e6) {
         thue = thuNhapChiuThue * 0.05;
-    } else if (thuNhapChiuThue <= 120_000_000) {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%
-        thue = (60_000_000 * 0.05) + (thuNhapChiuThue - 60_000_000) * 0.10;
-    } else if (thuNhapChiuThue <= 210_000_000) {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%, trên 120 đến 210 triệu: 15%
-        thue = (60_000_000 * 0.05) + (60_000_000 * 0.10) + (thuNhapChiuThue - 120_000_000) * 0.15;
-    } else if (thuNhapChiuThue <= 384_000_000) {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%, trên 120 đến 210 triệu: 15%, trên 210 đến 384 triệu: 20%
-        thue = (60_000_000 * 0.05) + (60_000_000 * 0.10) + (90_000_000 * 0.15) + (thuNhapChiuThue - 210_000_000) * 0.20;
-    } else if (thuNhapChiuThue <= 624_000_000) {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%, trên 120 đến 210 triệu: 15%, trên 210 đến 384 triệu: 20%, trên 384 đến 624 triệu: 25%
-        thue = (60_000_000 * 0.05) + (60_000_000 * 0.10) + (90_000_000 * 0.15) + (174_000_000 * 0.20) + (thuNhapChiuThue - 384_000_000) * 0.25;
-    } else if (thuNhapChiuThue <= 960_000_000) {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%, trên 120 đến 210 triệu: 15%, trên 210 đến 384 triệu: 20%, trên 384 đến 624 triệu: 25%, trên 624 đến 960 triệu: 30%
-        thue = (60_000_000 * 0.05) + (60_000_000 * 0.10) + (90_000_000 * 0.15) + (174_000_000 * 0.20) + (240_000_000 * 0.25) + (thuNhapChiuThue - 624_000_000) * 0.30;
+    } else if (thuNhapChiuThue <= 120e6) {
+        thue = thuNhapChiuThue * 0.10;
+    } else if (thuNhapChiuThue <= 210e6) {
+        thue = thuNhapChiuThue * 0.15;
+    } else if (thuNhapChiuThue <= 384e6) {
+        thue = thuNhapChiuThue * 0.20;
+    } else if (thuNhapChiuThue <= 624e6) {
+        thue = thuNhapChiuThue * 0.25;
+    } else if (thuNhapChiuThue <= 960e6) {
+        thue = thuNhapChiuThue * 0.30;
     } else {
-        // Đến 60 triệu: 5%, trên 60 đến 120 triệu: 10%, trên 120 đến 210 triệu: 15%, trên 210 đến 384 triệu: 20%, trên 384 đến 624 triệu: 25%, trên 624 đến 960 triệu: 30%, trên 960 triệu: 35%
-        thue = (60_000_000 * 0.05) + (60_000_000 * 0.10) + (90_000_000 * 0.15) + (174_000_000 * 0.20) + (240_000_000 * 0.25) + (336_000_000 * 0.30) + (thuNhapChiuThue - 960_000_000) * 0.35;
+        thue = thuNhapChiuThue * 0.35;
     }
 
-    return thue; // Trả về tổng thuế
-}
+    return thue;
+};
+
+// Hàm định dạng số tiền
+const formatCurrency = (amount) => {
+    const formatter = new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0
+    });
+    return formatter.format(amount);
+};
 
 // Hàm xử lý tính thuế
 const xuLyTinhThue = () => {
     // Lấy giá trị từ input
-    let hoTen = document.getElementById("inputHoTen").value;
+    let hoTen = document.getElementById("inputHoTen").value.trim();
     let thuNhapNam = Number(document.getElementById("inputThuNhap").value);
     let soNguoiPhuThuoc = Number(document.getElementById("inputSoNguoiPhuThuoc").value);
 
     // Kiểm tra dữ liệu hợp lệ
-    if (!hoTen || isNaN(thuNhapNam) || thuNhapNam < 0 || isNaN(soNguoiPhuThuoc) || soNguoiPhuThuoc < 0) {
-        alert("Vui lòng nhập đầy đủ và hợp lệ thông tin!");
+    const nameRegex = /^[a-zA-Z\sÀ-ỹ]+$/; // Chỉ cho phép chữ cái và khoảng trắng
+    if (!hoTen || !nameRegex.test(hoTen)) {
+        alert("Họ tên không hợp lệ! Chỉ được chứa chữ cái và khoảng trắng.");
+        return;
+    }
+    if (isNaN(thuNhapNam) || thuNhapNam < 0) {
+        alert("Thu nhập năm không hợp lệ! Vui lòng nhập số không âm (VD: 120e6 cho 120 triệu).");
+        return;
+    }
+    if (isNaN(soNguoiPhuThuoc) || soNguoiPhuThuoc < 0 || !Number.isInteger(soNguoiPhuThuoc)) {
+        alert("Số người phụ thuộc không hợp lệ! Vui lòng nhập số nguyên không âm.");
         return;
     }
 
     // Tính thu nhập chịu thuế
-    let giamTruCoDinh = 4_000_000; // Giảm trừ cố định 4 triệu
-    let giamTruPhuThuoc = soNguoiPhuThuoc * 1_600_000; // Giảm trừ mỗi người phụ thuộc 1.6 triệu
-    let thuNhapChiuThue = thuNhapNam - giamTruCoDinh - giamTruPhuThuoc;
+    const giamTruCoDinh = 4e6; // Giảm trừ cố định 4 triệu
+    const giamTruPhuThuoc = soNguoiPhuThuoc * 1.6e6; // Giảm trừ mỗi người phụ thuộc 1.6 triệu
+    const thuNhapChiuThue = thuNhapNam - giamTruCoDinh - giamTruPhuThuoc;
 
-    // Gọi hàm tinhThueThuNhap() để lấy tổng thuế
-    let thue = tinhThueThuNhap(thuNhapChiuThue);
+    // Tính thuế
+    const thue = tinhThueThuNhap(thuNhapNam, soNguoiPhuThuoc);
 
     // Hiển thị kết quả
-    let ketQua = document.getElementById("result1");
+    const ketQua = document.getElementById("result1");
     ketQua.innerHTML = `
         Họ tên: ${hoTen} <br>
-        Tổng thu nhập năm: ${thuNhapNam.toLocaleString()} VNĐ <br>
-        Số người phụ thuộc: ${soNguoiPhuThuoc} <br>
-        Thu nhập chịu thuế: ${thuNhapChiuThue.toLocaleString()} VNĐ <br>
-        Thuế phải nộp: ${thue.toLocaleString()} VNĐ
+        Thuế phải nộp: ${formatCurrency(thue)}
     `;
 
-    // Hiện khu vực kết quả
-    ketQua.style.display = "block";
-}
+};
 
 // Gắn sự kiện cho nút "Tính thuế"
 document.getElementById("btnSubmit1").onclick = xuLyTinhThue;
